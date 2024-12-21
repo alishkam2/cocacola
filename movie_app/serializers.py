@@ -1,41 +1,30 @@
-# movie_app/serializers.py
-
 from rest_framework import serializers
 from .models import Director, Movie, Review
 
 
 class DirectorSerializer(serializers.ModelSerializer):
-    movies_count = serializers.IntegerField(source="movies.count", read_only=True)
-
     class Meta:
         model = Director
-        fields = ["id", "name", "movies_count"]
+        fields = "__all__"
 
 
 class MovieSerializer(serializers.ModelSerializer):
-    reviews = serializers.StringRelatedField(many=True, read_only=True)
-    rating = serializers.SerializerMethodField()
-
     class Meta:
         model = Movie
-        fields = [
-            "id",
-            "title",
-            "description",
-            "duration",
-            "director",
-            "reviews",
-            "rating",
-        ]
+        fields = "__all__"
 
-    def get_rating(self, obj):
-        reviews = obj.reviews.all()
-        if reviews:
-            return sum([review.stars for review in reviews]) / len(reviews)
-        return None
+    def validate_duration(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Duration must be greater than 0.")
+        return value
 
 
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
-        fields = ["id", "text", "movie", "stars"]
+        fields = "__all__"
+
+    def validate_stars(self, value):
+        if not 1 <= value <= 5:
+            raise serializers.ValidationError("Stars must be between 1 and 5.")
+        return value
