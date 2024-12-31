@@ -1,30 +1,22 @@
 from rest_framework import serializers
 from .models import Director, Movie, Review
 
-
-class DirectorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Director
-        fields = "__all__"
-
-
-class MovieSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Movie
-        fields = "__all__"
-
-    def validate_duration(self, value):
-        if value <= 0:
-            raise serializers.ValidationError("Duration must be greater than 0.")
-        return value
-
-
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
-        fields = "__all__"
+        fields = '__all__'
 
-    def validate_stars(self, value):
-        if not 1 <= value <= 5:
-            raise serializers.ValidationError("Stars must be between 1 and 5.")
-        return value
+class MovieSerializer(serializers.ModelSerializer):
+    reviews = ReviewSerializer(many=True, read_only=True)
+    rating = serializers.FloatField(read_only=True)
+
+    class Meta:
+        model = Movie
+        fields = '__all__'
+
+class DirectorSerializer(serializers.ModelSerializer):
+    movies_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Director
+        fields = '__all__'
